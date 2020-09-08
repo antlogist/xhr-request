@@ -1,4 +1,4 @@
-const apiURL = "https://jsonplaceholder.typicode.com/users";
+const apiURL = "https://jsonplaceholder.typicode.com";
 let users = null;
 
 //DOM elements
@@ -56,12 +56,12 @@ function getUsers(cb) {
     // xhr object
     const xhr = new XMLHttpRequest();
     // xhr open
-    xhr.open("GET", apiURL);
+    xhr.open("GET", `${apiURL}/users`);
     // xhr load
     xhr.addEventListener("load", () => {
         // parse
-        const responce = JSON.parse(xhr.responseText);
-        users = responce;
+        const response = JSON.parse(xhr.responseText);
+        users = response;
         console.log(users);
         // callback
         cb(users);
@@ -173,17 +173,17 @@ function formSubmit(e) {
     // xhr object
     const xhr = new XMLHttpRequest();
     // xhr open
-    xhr.open("POST", apiURL);
+    xhr.open("POST", `${apiURL}/users`);
     // headers
     xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
     
     // xhr load
     xhr.addEventListener("load", () => {
         // parse
-        const responce = JSON.parse(xhr.responseText);
+        const response = JSON.parse(xhr.responseText);
         // call render list function
-        renderList([responce]);
-        console.log(responce);
+        renderList([response]);
+        console.log(response);
     });
     // xhr error
     xhr.addEventListener("error", () => {
