@@ -1,5 +1,7 @@
+const apiURL = "https://jsonplaceholder.typicode.com/users";
 let users = null;
 
+//DOM elements
 const container = document.getElementById("users");
 container.classList.add("container", "my-5");
 
@@ -8,7 +10,7 @@ const form = document.createElement("form");
 form.classList.add("mb-5");
 form.setAttribute("name", "addUserForm");
 
-// Render form
+// Render form inputs
 function renderInputs(...arr) {
     arr.map((item, index) => {
         const formGroup = document.createElement("div");
@@ -37,13 +39,16 @@ function renderInputs(...arr) {
     });
 }
 
+// Call render inputs function
 renderInputs("name", "email", "username", "phone", "website");
 
+// Render form button
 const sendButton = document.createElement("button");
 sendButton.classList.add("btn", "btn-primary");
 sendButton.textContent = "Send";
 form.appendChild(sendButton);
 
+// Append form
 container.appendChild(form);
 
 // Get users
@@ -51,7 +56,7 @@ function getUsers(cb) {
     // xhr object
     const xhr = new XMLHttpRequest();
     // xhr open
-    xhr.open("GET", "https://jsonplaceholder.typicode.com/users");
+    xhr.open("GET", apiURL);
     // xhr load
     xhr.addEventListener("load", () => {
         // parse
@@ -69,34 +74,39 @@ function getUsers(cb) {
     xhr.send();
 }
 
-// Render list
-const fragment = document.createDocumentFragment();
-// list group div
+// Call get user function
+getUsers(renderList);
+
+// Render user list
+const userFragment = document.createDocumentFragment();
 const accordion = document.createElement("div");
 accordion.id = "accordion";
 accordion.classList.add("accordion");
-
+// Render list function
 function renderList(users) {
     users.map(user => {
+        // Call create user template
         createTemplate(user);
     });
-    fragment.appendChild(accordion);
-    container.appendChild(fragment);
+    userFragment.appendChild(accordion);
+    container.appendChild(userFragment);
 }
 
-getUsers(renderList);
-
+// User template
 function createTemplate(user) {
     // card
     const card = document.createElement("div");
     card.classList.add("card");
+    
     // header
     const header = document.createElement("div");
     header.classList.add("card-header");
     header.id = `heading${user.id}`;
+    
     // h2
     const h2 = document.createElement("h2");
     h2.classList.add("mb-0");
+    
     // button
     const button = document.createElement("button");
     button.classList.add("btn", "btn-link", "btn-block", "text-left");
@@ -106,6 +116,7 @@ function createTemplate(user) {
     button.setAttribute("aria-expanded", "true");
     button.setAttribute("aria-controls", `collapse-${user.id}`);
     button.textContent = user.name;
+    
     // collapse div
     const collapseDiv = document.createElement("div");
     collapseDiv.id = `collapse-${user.id}`;
@@ -123,22 +134,24 @@ function createTemplate(user) {
             website: <i>${user.website}</i><br>
         `
     );
+    
     // append
     h2.appendChild(button);
     header.appendChild(h2);
     collapseDiv.appendChild(cardBody);
-    // append card
     card.appendChild(header);
     card.appendChild(collapseDiv);
     accordion.appendChild(card);
 }
 
+// Get form inputs
 const inputName = form.elements["name"];
 const inputEmail = form.elements["email"];
 const inputUserName = form.elements["username"];
 const inputPhone = form.elements["phone"];
 const inputWebsite = form.elements["website"];
 
+// Send button click event
 form.addEventListener("submit", formSubmit);
 
 // Form Submit
@@ -160,14 +173,15 @@ function formSubmit(e) {
     // xhr object
     const xhr = new XMLHttpRequest();
     // xhr open
-    xhr.open("POST", "https://jsonplaceholder.typicode.com/users");
+    xhr.open("POST", apiURL);
     // headers
-    xhr.setRequestHeader("Content-Type", "application/json; charset=UTF-8");
-
+    xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+    
     // xhr load
     xhr.addEventListener("load", () => {
         // parse
         const responce = JSON.parse(xhr.responseText);
+        // call render list function
         renderList([responce]);
         console.log(responce);
     });
