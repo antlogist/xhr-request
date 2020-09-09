@@ -83,11 +83,15 @@ const accordion = document.createElement("div");
 accordion.id = "accordion";
 accordion.classList.add("accordion");
 // Render list function
-function renderList(users) {
+function renderList(users, newUser = false) {
+    if (!users.length) {
+        return;
+    }
     users.map(user => {
         // Call create user template
         createTemplate(user);
     });
+    if (newUser === true) { return; }
     userFragment.appendChild(accordion);
     container.appendChild(userFragment);
 }
@@ -141,7 +145,7 @@ function createTemplate(user) {
     collapseDiv.appendChild(cardBody);
     card.appendChild(header);
     card.appendChild(collapseDiv);
-    accordion.appendChild(card);
+    accordion.prepend(card);
 }
 
 // Get form inputs
@@ -176,13 +180,14 @@ function formSubmit(e) {
     xhr.open("POST", `${apiURL}/users`);
     // headers
     xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
-    
     // xhr load
     xhr.addEventListener("load", () => {
         // parse
         const response = JSON.parse(xhr.responseText);
         // call render list function
-        renderList([response]);
+        renderList([response], true);
+        // form reset
+        form.reset();
         console.log(response);
     });
     // xhr error
