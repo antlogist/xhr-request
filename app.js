@@ -51,31 +51,80 @@ form.appendChild(sendButton);
 // Append form
 container.appendChild(form);
 
-// Get users
-function getUsers(cb) {
-    // xhr object
-    const xhr = new XMLHttpRequest();
-    // xhr open
-    xhr.open("GET", `${apiURL}/users`);
-    // xhr load
-    xhr.addEventListener("load", () => {
-        // parse
-        const response = JSON.parse(xhr.responseText);
-        users = response;
-        console.log(users);
-        // callback
-        cb(users);
-    });
-    // xhr error
-    xhr.addEventListener("error", () => {
-        console.log("error");
-    });
-    // xhr send
-    xhr.send();
+// GET and POST function
+function http() {
+    return {
+        get(url, cb) {
+            try {
+                // xhr object
+                const xhr = new XMLHttpRequest();
+                // xhr open
+                xhr.open("GET", url);
+                // xhr load
+                xhr.addEventListener("load", () => {
+                    if (Math.floor(xhr.status / 100) !== 2) {
+                        cb(`Error. Status code ${xhr.status}`, xhr);
+                        return;
+                    }
+                    // parse
+                    const response = JSON.parse(xhr.responseText);
+                    users = response;
+                    // callback
+                    cb(null, users);
+                });
+                // xhr error
+                xhr.addEventListener("error", () => {
+                    console.log("error");
+                });
+                // xhr send
+                xhr.send();
+            } catch (error) {
+                console.log(error);
+            }
+        },
+        post(url, body, headers, cb) {
+            // xhr object
+            const xhr = new XMLHttpRequest();
+            // xhr open
+            xhr.open("POST", url);
+            // headers
+            if (headers) {
+                Object.entries(headers).map(([key, value]) => {
+                    xhr.setRequestHeader(key, value);
+                });
+            }
+            // xhr load
+            xhr.addEventListener("load", () => {
+                if (Math.floor(xhr.status / 100) !== 2) {
+                    cb(`Error. Status code ${xhr.status}`, xhr);
+                    return;
+                }
+                // parse
+                const response = JSON.parse(xhr.responseText);
+                users = response;
+                // callback
+                cb(null, users);
+            });
+            // xhr error
+            xhr.addEventListener("error", () => {
+                console.log("error");
+            });
+            // xhr send
+            console.log(body);
+            xhr.send(JSON.stringify(body));
+        }
+    };
 }
 
-// Call get user function
-getUsers(renderList);
+const myHttp = http();
+
+myHttp.get(`${apiURL}/users`, (err, resp) => {
+    if (err) {
+        console.log(err);
+        return;
+    }
+    renderList(resp);
+});
 
 // Render user list
 const userFragment = document.createDocumentFragment();
@@ -91,26 +140,28 @@ function renderList(users, newUser = false) {
         // Call create user template
         createTemplate(user);
     });
-    if (newUser === true) { return; }
+    if (newUser === true) {
+        return;
+    }
     userFragment.appendChild(accordion);
     container.appendChild(userFragment);
 }
 
-// User template
+// User list template
 function createTemplate(user) {
     // card
     const card = document.createElement("div");
     card.classList.add("card");
-    
+
     // header
     const header = document.createElement("div");
     header.classList.add("card-header");
     header.id = `heading${user.id}`;
-    
+
     // h2
     const h2 = document.createElement("h2");
     h2.classList.add("mb-0");
-    
+
     // button
     const button = document.createElement("button");
     button.classList.add("btn", "btn-link", "btn-block", "text-left");
@@ -120,7 +171,7 @@ function createTemplate(user) {
     button.setAttribute("aria-expanded", "true");
     button.setAttribute("aria-controls", `collapse-${user.id}`);
     button.textContent = user.name;
-    
+
     // collapse div
     const collapseDiv = document.createElement("div");
     collapseDiv.id = `collapse-${user.id}`;
@@ -138,7 +189,7 @@ function createTemplate(user) {
             website: <i>${user.website}</i><br>
         `
     );
-    
+
     // append
     h2.appendChild(button);
     header.appendChild(h2);
@@ -166,34 +217,21 @@ function formSubmit(e) {
     const userName = inputUserName.value;
     const phone = inputPhone.value;
     const website = inputWebsite.value;
-    const body = JSON.stringify({
+    const body = {
         name: name,
         email: email,
         username: userName,
         phone: phone,
         website: website
+    };
+    const headers = { "Content-Type": "application/json; charset=UTF-8" };
+    // Post request
+    myHttp.post(`${apiURL}/users`, body, headers, (err, resp) => {
+        if (err) {
+            console.log(err);
+            return;
+        }
+        console.log(resp);
+        renderList([resp], true);
     });
-    console.log(body);
-    // xhr object
-    const xhr = new XMLHttpRequest();
-    // xhr open
-    xhr.open("POST", `${apiURL}/users`);
-    // headers
-    xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
-    // xhr load
-    xhr.addEventListener("load", () => {
-        // parse
-        const response = JSON.parse(xhr.responseText);
-        // call render list function
-        renderList([response], true);
-        // form reset
-        form.reset();
-        console.log(response);
-    });
-    // xhr error
-    xhr.addEventListener("error", () => {
-        console.log("error");
-    });
-    // xhr send
-    xhr.send(body);
 }
